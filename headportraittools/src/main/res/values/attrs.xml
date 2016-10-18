@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FilletImageView">
+        <attr name="round_leftup" format="dimension" />
+        <attr name="round_rightup" format="dimension" />
+        <attr name="round_leftdown" format="dimension" />
+        <attr name="round_rightdown" format="dimension" />
+    </declare-styleable>
+</resources>

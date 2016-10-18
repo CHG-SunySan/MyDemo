@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">MyDemo</string>
+
+    <string name="navigation_drawer_open">打开Open navigation drawer</string>
+    <string name="navigation_drawer_close">关闭Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+</resources>
