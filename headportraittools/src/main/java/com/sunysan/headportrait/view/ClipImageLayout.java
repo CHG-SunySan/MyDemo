@@ -13,15 +13,17 @@ import android.widget.RelativeLayout;
  * Created by SunySan on 2016/10/16.
  */
 public class ClipImageLayout extends RelativeLayout {
-	private ClipZoomImageView1 mZoomImageView;
+	private ClipZoomImageView mZoomImageView;
 	private ClipImageBorderView mClipImageView;
 	private int mHorizontalPadding = 0;// 框左右的边距，这里左右边距为0
+
+	public static boolean isCcircle = false;//剪裁是否为圆形，true为圆形，false为矩形
 
 	public ClipImageLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
-		mZoomImageView = new ClipZoomImageView1(context);
-		mClipImageView = new ClipImageBorderView(context);
+		mZoomImageView = new ClipZoomImageView(context);
+		mClipImageView = new ClipImageBorderView(context,isCcircle);
 
 		android.view.ViewGroup.LayoutParams lp = new LayoutParams(
 				android.view.ViewGroup.LayoutParams.MATCH_PARENT,
@@ -62,5 +64,14 @@ public class ClipImageLayout extends RelativeLayout {
 	 */
 	public Bitmap clip() {
 		return mZoomImageView.clip();
+	}
+
+	/**
+	 * 裁切图片:圆形
+	 *
+	 * @return
+	 */
+	public Bitmap clipCircle() {
+		return mZoomImageView.clipCircle();
 	}
 }

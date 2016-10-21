@@ -2,6 +2,7 @@ package test.sunysan.com.mydemo;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -21,7 +22,7 @@ import com.sunysan.headportrait.impl.HeadPortraitImp;
 import com.sunysan.headportrait.activity.ImageActivity;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,HeadPortraitImp.ActivityResultInterface {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,33 +63,26 @@ public class MainActivity extends AppCompatActivity
     }
 
     ImageView image;
-    ImageView myIcon;
+//    ImageView myIcon;
     HeadPortraitImp imp;
 
     private void initView() {
         image = (ImageView) findViewById(R.id.imagetest);
-        myIcon = (ImageView) findViewById(R.id.my_icon);
+//        myIcon = (ImageView) findViewById(R.id.my_icon);
 
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                imp = new HeadPortraitImp(MainActivity.this, resultInterface);
+                imp = new HeadPortraitImp(MainActivity.this, MainActivity.this);
                 imp.showPopupWindow();
             }
         });
 
-        myIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                imp = new HeadPortraitImp(MainActivity.this, resultInterface);
-                imp.showPopupWindow();
-            }
-        });
 
     }
 
 
-    HeadPortraitImp.ActivityResultInterface resultInterface = new HeadPortraitImp.ActivityResultInterface() {
+//    HeadPortraitImp.ActivityResultInterface resultInterface = new HeadPortraitImp.ActivityResultInterface() {
         @Override
         public void startActivityResult(Intent intent, int reqCode) {
             startActivityForResult(intent, reqCode);
@@ -98,10 +92,10 @@ public class MainActivity extends AppCompatActivity
         public void setBitmap(Bitmap mBitmap) {
             if (mBitmap != null) {
                 image.setImageBitmap(mBitmap);
-                myIcon.setImageBitmap(mBitmap);
             }
         }
-    };
+//
+//    };
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

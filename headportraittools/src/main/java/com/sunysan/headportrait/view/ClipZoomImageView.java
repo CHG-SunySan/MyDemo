@@ -4,10 +4,17 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
@@ -19,14 +26,14 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 /**
- * 缩放图片的View
- *
- * @ClassName: ClipZoomImageView
+ * 缩放、平移、旋转、裁剪 图片的View
  * Created by SunySan on 2016/10/16.
  */
 public class ClipZoomImageView extends ImageView implements
         OnScaleGestureListener, OnTouchListener,
         ViewTreeObserver.OnGlobalLayoutListener {
+    private Context context;
+
     private static final int NONE = 0;
     private static final int DRAG = 1;
     private static final int ZOOM = 2;
@@ -45,7 +52,7 @@ public class ClipZoomImageView extends ImageView implements
 
     private Matrix matrix = new Matrix();
     private Matrix matrix1 = new Matrix();
-    private Matrix savedMatrix = new Matrix();
+//    private Matrix savedMatrix = new Matrix();
 
     /**
      * 初始化时的缩放比例，如果图片宽或高大于屏幕
@@ -85,13 +92,21 @@ public class ClipZoomImageView extends ImageView implements
 
     public ClipZoomImageView(Context context) {
         this(context, null);
+        this.context = context;
     }
 
     public ClipZoomImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
+        this.context = context;
         setScaleType(ScaleType.MATRIX);
         matrix.set(getImageMatrix());
+        scaleRun();
+        mScaleGestureDetector = new ScaleGestureDetector(context, this);
+        this.setOnTouchListener(this);
+    }
+
+
+    private void scaleRun() {
         mGestureDetector = new GestureDetector(context,
                 new SimpleOnGestureListener() {
                     @Override
@@ -104,7 +119,7 @@ public class ClipZoomImageView extends ImageView implements
 
                         float x = e.getX();
                         float y = e.getY();
-                        matrix1.set(savedMatrix);
+                        matrix1.set(mScaleMatrix);
                         if (getScale() < SCALE_MID) {
                             ClipZoomImageView.this.postDelayed(
                                     new AutoScaleRunnable(SCALE_MID, x, y), 16);
@@ -119,9 +134,8 @@ public class ClipZoomImageView extends ImageView implements
                         return true;
                     }
                 });
-        mScaleGestureDetector = new ScaleGestureDetector(context, this);
-        this.setOnTouchListener(this);
     }
+
 
     /**
      * 自动缩放
@@ -161,7 +175,9 @@ public class ClipZoomImageView extends ImageView implements
             // 进行缩放
             mScaleMatrix.postScale(tmpScale, tmpScale, x, y);
             checkBorder();
-            setImageMatrix(mScaleMatrix);
+            matrix.set(mScaleMatrix);
+            setImageMatrix(matrix);
+//            setImageMatrix(mScaleMatrix);
 
             final float currentScale = getScale();
             // 如果值在合法范围内，继续缩放
@@ -174,7 +190,9 @@ public class ClipZoomImageView extends ImageView implements
                 final float deltaScale = mTargetScale / currentScale;
                 mScaleMatrix.postScale(deltaScale, deltaScale, x, y);
                 checkBorder();
-                setImageMatrix(mScaleMatrix);
+                matrix.set(mScaleMatrix);
+                setImageMatrix(matrix);
+//                setImageMatrix(mScaleMatrix);
                 isAutoScale = false;
             }
 
@@ -206,7 +224,9 @@ public class ClipZoomImageView extends ImageView implements
             mScaleMatrix.postScale(scaleFactor, scaleFactor,
                     detector.getFocusX(), detector.getFocusY());
             checkBorder();
-            setImageMatrix(mScaleMatrix);
+            matrix.set(mScaleMatrix);
+            setImageMatrix(matrix);
+//            setImageMatrix(mScaleMatrix);
         }
         return true;
     }
@@ -216,7 +236,7 @@ public class ClipZoomImageView extends ImageView implements
      *
      * @return
      */
-    private RectF getMatrixRectF() {
+    private RectF getMatrixRectF() {//这里需要注意
         Matrix matrix = mScaleMatrix;
         RectF rect = new RectF();
         Drawable d = getDrawable();
@@ -238,149 +258,174 @@ public class ClipZoomImageView extends ImageView implements
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        //关键操作：双击放大缩小，设置事件给它
-        if (mGestureDetector.onTouchEvent(event))
-            return true;
-        mScaleGestureDetector.onTouchEvent(event);
 
-        float x = 0, y = 0;
-        // 拿到触摸点的个数
-        final int pointerCount = event.getPointerCount();
-        // 得到多个触摸点的x与y
-        for (int i = 0; i < pointerCount; i++) {
-            x += event.getX(i);
-            y += event.getY(i);
-        }
-        x = x / pointerCount;
-        y = y / pointerCount;
+        try {
+            //关键操作：双击放大缩小，设置事件给它
+            if (mGestureDetector.onTouchEvent(event)) {
+                Log.e("SunySan", "双击操作");
+                return true;
+            }
+            mScaleGestureDetector.onTouchEvent(event);
 
-        /**
-         * 每当触摸点发生变化时，重置mLasX , mLastY
-         */
-        if (pointerCount != lastPointerCount) {
-            isCanDrag = false;
-            mLastX = x;
-            mLastY = y;
-        }
+            float x = 0, y = 0;
+            // 拿到触摸点的个数
+            final int pointerCount = event.getPointerCount();
+            // 得到多个触摸点的x与y
+            for (int i = 0; i < pointerCount; i++) {
+                x += event.getX(i);
+                y += event.getY(i);
+            }
+            x = x / pointerCount;
+            y = y / pointerCount;
 
-        lastPointerCount = pointerCount;
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                mode = DRAG;
-                savedMatrix.set(matrix);
-                break;
-            case MotionEvent.ACTION_POINTER_DOWN:
-                mode = ZOOM;
-                //第二个手指刚放下时，计算两个手指之间的距离
-                oldDist = spacing(event);
-                /**
-                 * 第二个手指刚放下时
-                 * 计算两个手指见的旋转角度
-                 */
-                oldRotation = rotations(event);
-                savedMatrix.set(matrix);
-                /**
-                 * 第二个手指刚放下时
-                 * 计算两个手指见的中间点坐标，并存在mid中
-                 */
-                midPoint(mid, event);
-                break;
+            /**
+             * 每当触摸点发生变化时，重置mLasX , mLastY
+             */
+            if (pointerCount != lastPointerCount) {
+                isCanDrag = false;
+                mLastX = x;
+                mLastY = y;
+            }
 
-            case MotionEvent.ACTION_MOVE:
-                if (mode == ZOOM) {
-                    matrix1.set(savedMatrix);
+            lastPointerCount = pointerCount;
+            //单独的event,getAction()是单点触控，加上& MotionEvent.ACTION_MASK 就是多点触控了，详细查略多点触控和单点触控
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    mode = DRAG;
+//                    savedMatrix.set(matrix);
+                    mScaleMatrix.set(matrix);
+                    Log.e("SunySan", "现在是 ACTION_DOWN");
+//                setImageMatrix(savedMatrix);
+                    break;
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    mode = ZOOM;
+                    //第二个手指刚放下时，计算两个手指之间的距离
+                    oldDist = spacing(event);
                     /**
-                     * 两个手指开始移动
-                     * 计算移动后旋转角度
+                     * 第二个手指刚放下时
+                     * 计算两个手指见的旋转角度
                      */
-                    newRotation = rotations(event);
+                    oldRotation = rotations(event);
+                    mScaleMatrix.set(matrix);
                     /**
-                     * 两个角度之差
-                     * 即是图片的旋转角度
+                     * 第二个手指刚放下时
+                     * 计算两个手指见的中间点坐标，并存在mid中
                      */
-                    rotation = newRotation - oldRotation;
-                    /**
-                     * 计算移动后两点间的中间点
-                     */
-                    float newDist = spacing(event);
-                    /**
-                     * 两个中间点的商即时放大倍数
-                     */
-                    float scale = newDist / oldDist;
-                    /**
-                     * 放大倍数的倒数即是还原图片原来大小的倍数
-                     */
-                    Reset_scale = oldDist / newDist;
-                    matrix1.postScale(scale, scale, mid.x, mid.y);// 縮放
-                    matrix1.postRotate(rotation, mid.x, mid.y);// 旋轉
-                    matrix.set(matrix1);
-                    /**
-                     * 调用该方法即可重新图片
-                     */
-                    setImageMatrix(matrix);
-                } else {
+                    midPoint(mid, event);
+                    setImageMatrix(mScaleMatrix);
+                    Log.e("SunySan", "现在是 ACTION_POINTER_DOWN");
+                    break;
 
-                    float dx = x - mLastX;
-                    float dy = y - mLastY;
+                case MotionEvent.ACTION_MOVE:
+                    if (mode == ZOOM) {
+                        Log.e("SunySan", "现在是 ACTION_MOVE并且是在mode == ZOOM 中");
+                        matrix1.set(mScaleMatrix);
+                        /**
+                         * 两个手指开始移动
+                         * 计算移动后旋转角度
+                         */
+                        newRotation = rotations(event);
+                        /**
+                         * 两个角度之差
+                         * 即是图片的旋转角度
+                         */
+                        rotation = newRotation - oldRotation;
+                        /**
+                         * 计算移动后两点间的中间点
+                         */
+                        float newDist = spacing(event);
+                        /**
+                         * 两个中间点的商即时放大倍数
+                         */
+//                        float scale = 1.0f;
+                        float scale = newDist / oldDist;
 
-                    if (!isCanDrag) {
-                        isCanDrag = isCanDrag(dx, dy);
-                    }
-                    if (isCanDrag) {
-                        if (getDrawable() != null) {
+                        /**
+                         * 放大倍数的倒数即是还原图片原来大小的倍数
+                         */
+                        Reset_scale = oldDist / newDist;
+//                        matrix1.postScale(scale, scale, mid.x, mid.y);// 缩放
+                        matrix1.postRotate(rotation, mid.x, mid.y);// 旋转
+                        matrix1.postScale(scale, scale, mid.x,
+                                mid.y);
 
-                            RectF rectF = getMatrixRectF();
-                            // 如果宽度小于屏幕宽度，则禁止左右移动
-                            if (rectF.width() <= getWidth() - mHorizontalPadding * 2) {
-                                dx = 0;
-                            }
+                        matrix.set(matrix1);
+                        /**
+                         * 调用该方法即可重新图片
+                         */
+                        setImageMatrix(matrix);
+                    } else {
+                        Log.e("SunySan", "现在是 ACTION_MOVE并且是在mode不等于ZOOM中");
+                        float dx = x - mLastX;
+                        float dy = y - mLastY;
 
-                            // 如果高度小雨屏幕高度，则禁止上下移动
-                            if (rectF.height() <= getHeight() - getHVerticalPadding()
-                                    * 2) {
-                                dy = 0;
-                            }
-                            mScaleMatrix.postTranslate(dx, dy);
-                            checkBorder();
-                            setImageMatrix(mScaleMatrix);
+                        if (!isCanDrag) {
+                            isCanDrag = isCanDrag(dx, dy);
                         }
+                        if (isCanDrag) {
+                            if (getDrawable() != null) {
+
+                                RectF rectF = getMatrixRectF();
+                                // 如果宽度小于屏幕宽度，则禁止左右移动
+                                if (rectF.width() <= getWidth() - mHorizontalPadding * 2) {
+                                    dx = 0;
+                                }
+
+                                // 如果高度小雨屏幕高度，则禁止上下移动
+                                if (rectF.height() <= getHeight() - getHVerticalPadding()
+                                        * 2) {
+                                    dy = 0;
+                                }
+                                //aiaiaiaiai
+//                                matrix1.postTranslate(dx, dy);
+//                                checkBorder();
+//                                setImageMatrix(matrix1);
+                                mScaleMatrix.postTranslate(dx, dy);
+                                checkBorder();
+                                matrix.set(mScaleMatrix);
+                                setImageMatrix(matrix);
+                            }
+                        }
+                        mLastX = x;
+                        mLastY = y;
                     }
-                    mLastX = x;
-                    mLastY = y;
-                }
-                break;
+                    break;
 
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP:
-                if (mode == ZOOM) {
-                    /**
-                     * 双手放开，停止图片的旋转和缩放
-                     * Reset_scale还原图片的缩放比例
-                     */
-                    matrix1.postScale(Reset_scale, Reset_scale, mid.x, mid.y);
-                    /**
-                     * 双手放开，停止缩放、旋转图片，此时根据已旋转的角度
-                     * 计算还原图片的角度，最终的效果是把图片竖直或横平方正。
-                     */
-                    setRotate();
-                    matrix.set(matrix1);
-                    /**
-                     * 将图片放在屏幕中间位置
-                     */
+                case MotionEvent.ACTION_POINTER_UP:
+                    if (mode == ZOOM) {
+                        /**
+                         * 双手放开，停止图片的旋转和缩放
+                         * Reset_scale还原图片的缩放比例
+                         */
+                        matrix1.postScale(Reset_scale, Reset_scale, mid.x, mid.y);
+                        /**
+                         * 双手放开，停止缩放、旋转图片，此时根据已旋转的角度
+                         * 计算还原图片的角度，最终的效果是把图片竖直或横平方正。
+                         */
+                        setRotate();
+                        matrix.set(matrix1);
+                        /**
+                         * 将图片放在屏幕中间位置
+                         */
 //                    center(true, true);
-                    setImageMatrix(matrix);
-                    matrix1.reset();
-                }
-                mode = NONE;
-                lastPointerCount = 0;
-                break;
+//                    matrix1.reset();
+                        setImageMatrix(matrix);
+                    } else if (mode == DRAG)
+                        mode = NONE;
+//                lastPointerCount = 0;
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    lastPointerCount = 0;
+                    break;
+            }
 
-            case MotionEvent.ACTION_CANCEL:
-                lastPointerCount = 0;
-                break;
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
-
         return true;
+
+
     }
 
     /**
@@ -459,7 +504,9 @@ public class ClipZoomImageView extends ImageView implements
                     getHeight() / 2);
 
             // 图片移动至屏幕中
-            setImageMatrix(mScaleMatrix);
+            matrix.set(mScaleMatrix);
+            setImageMatrix(matrix);
+//            setImageMatrix(mScaleMatrix);
             once = false;
         }
     }
@@ -477,6 +524,36 @@ public class ClipZoomImageView extends ImageView implements
         return Bitmap.createBitmap(bitmap, mHorizontalPadding,
                 getHVerticalPadding(), getWidth() - 2 * mHorizontalPadding,
                 getWidth() - 2 * mHorizontalPadding);
+    }
+
+    /**
+     * 剪切图片，返回剪切后的bitmap对象(裁剪圆形)
+     * @return
+     */
+    public Bitmap clipCircle() {
+        return getCircleBitmap();
+    }
+
+
+    /**
+     * @param
+     * @return
+     */
+    private Bitmap getCircleBitmap() {
+        int targetWidth = 125;
+        int targetHeight = 125;
+        Bitmap targetBitmap = Bitmap.createBitmap( targetWidth, targetHeight, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas( targetBitmap);
+        Path path = new Path();
+        path.addCircle( ((float)targetWidth - 1) / 2, ((float)targetHeight - 1) / 2,
+                (Math.min( ((float)targetWidth), ((float)targetHeight)) / 2), Path.Direction.CCW);
+
+        canvas.clipPath( path);
+        Bitmap sourceBitmap = clip();
+        canvas.drawBitmap( sourceBitmap, new Rect( 0, 0, sourceBitmap.getWidth(), sourceBitmap.getHeight()), new Rect( 0, 0,
+                targetWidth, targetHeight), null);
+        return targetBitmap;
     }
 
     /**
@@ -563,39 +640,39 @@ public class ClipZoomImageView extends ImageView implements
     /**
      * 手指松开，确定旋转的角度
      */
-    private void setRotate(){
-        if (rotation<-315) {
-            matrix1.postRotate(-360-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < -270) {
-            matrix1.postRotate(-270-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < -225) {
-            matrix1.postRotate(-270-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < -180) {
-            matrix1.postRotate(-180-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < -135) {
-            matrix1.postRotate(-180-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < -90) {
-            matrix1.postRotate(-90-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < -45) {
-            matrix1.postRotate(-90-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < 0) {
-            matrix1.postRotate(0-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < 45) {
-            matrix1.postRotate(0-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < 90) {
-            matrix1.postRotate(90-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < 135) {
-            matrix1.postRotate(90-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < 180) {
-            matrix1.postRotate(180-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < 225) {
-            matrix1.postRotate(180-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < 270) {
-            matrix1.postRotate(270-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < 315) {
-            matrix1.postRotate(270-rotation, mid.x, mid.y);// 旋轉
-        }else if (rotation < 360) {
-            matrix1.postRotate(360-rotation, mid.x, mid.y);// 旋轉
+    private void setRotate() {
+        if (rotation < -315) {
+            matrix1.postRotate(-360 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < -270) {
+            matrix1.postRotate(-270 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < -225) {
+            matrix1.postRotate(-270 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < -180) {
+            matrix1.postRotate(-180 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < -135) {
+            matrix1.postRotate(-180 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < -90) {
+            matrix1.postRotate(-90 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < -45) {
+            matrix1.postRotate(-90 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < 0) {
+            matrix1.postRotate(0 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < 45) {
+            matrix1.postRotate(0 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < 90) {
+            matrix1.postRotate(90 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < 135) {
+            matrix1.postRotate(90 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < 180) {
+            matrix1.postRotate(180 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < 225) {
+            matrix1.postRotate(180 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < 270) {
+            matrix1.postRotate(270 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < 315) {
+            matrix1.postRotate(270 - rotation, mid.x, mid.y);// 旋转
+        } else if (rotation < 360) {
+            matrix1.postRotate(360 - rotation, mid.x, mid.y);// 旋转
         }
     }
 

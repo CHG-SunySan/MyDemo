@@ -24,8 +24,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.sunysan.headportrait.activity.ImageActivity" />
-        <activity android:name="com.sunysan.headportrait.activity.ClipImageActivity" />
     </application>
 
 </manifest>

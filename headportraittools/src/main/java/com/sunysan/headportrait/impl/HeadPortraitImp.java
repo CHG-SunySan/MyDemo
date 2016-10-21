@@ -17,10 +17,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import com.sunysan.headportrait.activity.ClipImageActivity;
+import com.sunysan.headportrait.view.ClipImageLayout;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,11 +41,13 @@ public class HeadPortraitImp {
     private PopupWindow popupWindow;
     private Context context;
     private ActivityResultInterface resultInterface;
+    private TextView isCircularText;
 
 
     public HeadPortraitImp(Context context, ActivityResultInterface resultInterface) {
         this.context = context;
         this.resultInterface = resultInterface;
+
     }
 
     /**
@@ -52,7 +55,7 @@ public class HeadPortraitImp {
      */
     public void showPopupWindow() {
         View rootView = LayoutInflater.from(context).inflate(
-                R.layout.item_popupwindows, null);
+                R.layout.head_popupwindows, null);
 
         FrameLayout popuNull = (FrameLayout) rootView
                 .findViewById(R.id.popu_null);
@@ -60,15 +63,20 @@ public class HeadPortraitImp {
                 .findViewById(R.id.popu_photograph);
         Button popuAlbum = (Button) rootView.findViewById(R.id.popu_album);
         Button popuCancel = (Button) rootView.findViewById(R.id.popu_cancel);
+        isCircularText = (TextView) rootView.findViewById(R.id.popu_circle);
 
         popuNull.setOnClickListener(onClick);
         popuPhotograph.setOnClickListener(onClick);
         popuAlbum.setOnClickListener(onClick);
         popuCancel.setOnClickListener(onClick);
+        isCircularText.setOnClickListener(onClick);
 
-        popupWindow = new PopupWindow(rootView,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT);
+        if (popupWindow == null){
+            popupWindow = new PopupWindow(rootView,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+        }
+
         // 获得焦点，否则无法点击
         popupWindow.setFocusable(true);
         // 点击窗口外边窗口消失
@@ -79,6 +87,7 @@ public class HeadPortraitImp {
         popupWindow.showAtLocation(rootView, Gravity.CENTER,
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
+        ClipImageLayout.isCcircle = false;
     }
 
     // 裁剪图片的Activity
@@ -118,6 +127,14 @@ public class HeadPortraitImp {
                 popupWindow.dismiss();
             } else if (id == R.id.popu_cancel) {// 取消
                 popupWindow.dismiss();
+            }else if (id == R.id.popu_circle ){
+                if (!ClipImageLayout.isCcircle) {
+                    isCircularText.setTextColor(context.getResources().getColor(R.color.use_circle));
+                    ClipImageLayout.isCcircle = true;
+                }else {
+                    isCircularText.setTextColor(context.getResources().getColor(R.color.use_default));
+                    ClipImageLayout.isCcircle = false;
+                }
             }
         }
     };
@@ -152,6 +169,7 @@ public class HeadPortraitImp {
                 startCropImageActivity(Environment.getExternalStorageDirectory()
                         + TMP_PATH);
                 break;
+
         }
     }
 

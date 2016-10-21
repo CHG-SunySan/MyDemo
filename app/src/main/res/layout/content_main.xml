@@ -57,19 +57,6 @@
         android:layout_marginTop="20dp"
         android:src="@mipmap/ic_app"/>
 
-    <view
-        class="com.sunysan.headportrait.view.FilletImageView"
-        android:id="@+id/my_icon"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="10dp"
-        android:layout_gravity="center_horizontal"
-        android:src="@mipmap/ic_app"
-        app:round_leftdown="60dp"
-        app:round_leftup="60dp"
-        app:round_rightdown="60dp"
-        android:layout_below="@id/imagetest"
-        app:round_rightup="60dp"
-        />
+
 
 </RelativeLayout>
