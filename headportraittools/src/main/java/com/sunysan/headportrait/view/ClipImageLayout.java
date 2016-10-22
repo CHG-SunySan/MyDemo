@@ -13,7 +13,7 @@ import android.widget.RelativeLayout;
  * Created by SunySan on 2016/10/16.
  */
 public class ClipImageLayout extends RelativeLayout {
-	private ClipZoomImageView mZoomImageView;
+	private ClipZoomImageViewSuper mZoomImageView;
 	private ClipImageBorderView mClipImageView;
 	private int mHorizontalPadding = 0;// 框左右的边距，这里左右边距为0
 
@@ -22,7 +22,7 @@ public class ClipImageLayout extends RelativeLayout {
 	public ClipImageLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
-		mZoomImageView = new ClipZoomImageView(context);
+		mZoomImageView = new ClipZoomImageViewSuper(context);
 		mClipImageView = new ClipImageBorderView(context,isCcircle);
 
 		android.view.ViewGroup.LayoutParams lp = new LayoutParams(
