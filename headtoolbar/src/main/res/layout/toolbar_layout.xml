@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/bg"
+    android:orientation="vertical">
+
+<!--
+设置这个属性是为了防止字体大小因为高的问题产生偏移
+android:minHeight="?attr/actionBarSize"
+-->
+   <view.HeadToolBar
+       android:id="@+id/head_toolbar"
+       android:layout_width="match_parent"
+       android:minHeight="?attr/actionBarSize"
+       android:layout_height="52dp"
+       android:background="?attr/colorPrimary"
+       app:contentInsetStart="0dp"
+       app:contentInsetEnd="0dp"
+       app:navigationIcon="@drawable/head_back_sub_line"
+       app:popupTheme="@style/OverFlowMenuStyle">
+
+
+   </view.HeadToolBar>
+
+</LinearLayout>

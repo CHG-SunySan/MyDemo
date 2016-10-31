@@ -24,6 +24,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:theme="@style/AppBaseMyTheme"
+            android:name=".ToolBarTest"/>
+
     </application>
 
 </manifest>

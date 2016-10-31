@@ -53,35 +53,18 @@ public class ClipZoomImageViewSuper extends ImageView implements
     private List<CustomBitmap> _bitmaps;
     private CustomBitmap _curCustomBitmap;//当前操作的图形
 
-    public void addBitmap(CustomBitmap bitmap) {
-        _bitmaps.add(bitmap);
-    }
-
-    public List<CustomBitmap> getViews() {
-        return _bitmaps;
-    }
-
-
     private PointF mid = new PointF();
-
-    private float oldDist = 1f;
-    private float oldRotation = 0;//第二个手指放下时的两点的旋转角度
-    private float rotation = 0;//旋转角度差值
-    private float newRotation = 0;
-//    private float Reset_scale = 1;
 
     public static float SCALE_MAX = 4.0f;
     private static float SCALE_MID = 2.0f;
 
     private Matrix matrix = new Matrix();
     private Matrix matrix1 = new Matrix();
-    private Matrix savedMatrix = new Matrix();
 
     /**
      * 初始化时的缩放比例，如果图片宽或高大于屏幕
      */
     private float initScale = 1.0f;
-
 
     /**
      * 用于存放矩阵的9个值
@@ -318,9 +301,9 @@ public class ClipZoomImageViewSuper extends ImageView implements
             switch (event.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
                     mode = MODE.DRAG;
-                    if (_curCustomBitmap == null && _bitmaps.size() > 0) {
-                        _curCustomBitmap = _bitmaps.get(_bitmaps.size() - 1);
-                    }
+//                    if (_curCustomBitmap == null && _bitmaps.size() > 0) {
+//                        _curCustomBitmap = _bitmaps.get(_bitmaps.size() - 1);
+//                    }
                     boolean isChanged = false;//当前操作bitmap是否改变
                     ClipZoomImageViewSuper.this.setDrawingCacheEnabled(true);
                     Bitmap b = ClipZoomImageViewSuper.this.getDrawingCache();

@@ -28,7 +28,7 @@ public class ImageActivity extends Activity implements OnClickListener {
     private final int CAMERA_WITH_DATA = 2;
     private final int CROP_RESULT_CODE = 3;
     private final String FILE_PATH = "/com.sunysan";
-    public static final String TMP_PATH = "/clip_temp.jpg";
+    public static final String TMP_PATH = "/clip_head.jpg";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
