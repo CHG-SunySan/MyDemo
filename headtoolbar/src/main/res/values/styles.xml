@@ -11,6 +11,7 @@
         <item name="windowNoTitle">true</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">#FF4081</item>
+        <item name="android:textColorPrimary">@color/toolbar_white</item>
         <item name="toolbarNavigationButtonStyle">@style/myToolbarNavigationButtonStyle</item>
         <item name="toolbarStyle">@style/clubToolbar</item>
         <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>

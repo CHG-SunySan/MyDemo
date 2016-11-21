@@ -27,13 +27,35 @@ import android.widget.Toast;
 
 import java.lang.reflect.Field;
 
+import interfaces.RightOnclick;
 import tests.sunysan.com.headtoolbar.R;
 
 /**
  * Created by SunySan on 2016/10/30.
  */
 public class HeadToolBar extends Toolbar {
+    //右边图标的位置
+    public final static int POSITION_FIRST = 0;
+    public final static int POSITION_SECOND = 1;
+    public final static int POSITION_THIRD = 2;
+    //右边图片的ID
+    public final static int RIGHTIMG1 = 887;
+    public final static int RIGHTIMG2 = 888;
+    public final static int RIGHTIMG3 = 889;
+    public final static String IMAGE = "image";
+    public final static String TEXT = "text";
+
     public static int TOOLBAR_HEIGHT = 0;
+
+    //rightText的文本
+    private String defaultTextString;
+    private String changeTextString;
+    private int defaultTextInt;
+    private int changeTextInt;
+    private int textColor = -1;//设置字体颜色
+
+    private boolean isChange = false;
+
     private PopupWindow popWind;
 
     private Context mContext;
@@ -41,19 +63,22 @@ public class HeadToolBar extends Toolbar {
     private TextView mTitleTextView;
     private TextView mSubtitleTextView;
     private LinearLayout rightLay;
+    private TextView rightText;
+    private ImageView imageView;
+
 
     private CharSequence mTitleText;
     private CharSequence mSubtitleText;
 
     private int mTitleTextColor;
     private int mSubtitleTextColor;
-
     private int mTitleTextAppearance;
     private int mSubtitleTextAppearance;
 
-    private@Nullable AttributeSet attrs;
+    private
+    @Nullable
+    AttributeSet attrs;
     private int defStyleAttr;
-
 
 
     public HeadToolBar(Context context) {
@@ -81,6 +106,7 @@ public class HeadToolBar extends Toolbar {
 
     /**
      * 重新设置标题的样式
+     *
      * @param context
      * @param attrs
      * @param defStyleAttr
@@ -110,6 +136,7 @@ public class HeadToolBar extends Toolbar {
 
     /**
      * 重新设置标题的样式
+     *
      * @param context
      * @param attrs
      * @param defStyleAttr
@@ -139,13 +166,13 @@ public class HeadToolBar extends Toolbar {
 
     private void initView() {
         //默认导航图标
-//        setNavigationIcon(R.drawable.head_back_sub_line);
+        setNavigationIcon(R.drawable.head_back_sub_line);
         //默认标题
 //        setTitle(R.string.app_name);
         //默认标题颜色
         setTitleColor(R.color.toolbar_white);
         //默认背景颜色
-//        setBgColor(R.color.theme);
+        setBgColor(R.color.theme);
         //先不要调用该方法
         reSetHeadToolBarHeight(52);
 
@@ -175,19 +202,13 @@ public class HeadToolBar extends Toolbar {
      * @param icon
      * @param btnClick
      */
-    public void setRight1(@Nullable Integer text, @Nullable Integer icon, View.OnClickListener btnClick) {
-        rightLay = new LinearLayout(mContext);
-        LinearLayout.LayoutParams paramLay = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT
-        );
-        paramLay.weight = 1;
-        paramLay.setMargins(0, 0, 10, 0);
-        rightLay.setLayoutParams(paramLay);
-        rightLay.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
-        rightLay.setOrientation(LinearLayout.HORIZONTAL);
+    public void setRight1(@Nullable Object text, @Nullable Integer icon, View.OnClickListener btnClick) {
+        if (rightLay == null) {
+            setLinearLayoutPamas();
+            addRightView(rightLay);
+        }
 
-        initRight(text, icon, btnClick);
-        addRightView(rightLay);
+        initRight(text, icon, RIGHTIMG1, btnClick);
 
     }
 
@@ -198,8 +219,8 @@ public class HeadToolBar extends Toolbar {
      * @param icon
      * @param btnClick
      */
-    public void setRight2(@Nullable Integer text, @Nullable Integer icon, View.OnClickListener btnClick) {
-        initRight(text, icon, btnClick);
+    public void setRight2(@Nullable Object text, @Nullable Integer icon, View.OnClickListener btnClick) {
+        initRight(text, icon, RIGHTIMG2, btnClick);
     }
 
     /**
@@ -209,13 +230,158 @@ public class HeadToolBar extends Toolbar {
      * @param icon
      * @param btnClick
      */
-    public void setRight3(@Nullable Integer text, @Nullable Integer icon, View.OnClickListener btnClick) {
-        initRight(text, icon, btnClick);
+    public void setRight3(@Nullable Object text, @Nullable Integer icon, View.OnClickListener btnClick) {
+        initRight(text, icon, RIGHTIMG3, btnClick);
     }
 
-    private void initRight(@Nullable Integer text, @Nullable Integer icon, View.OnClickListener btnClick) {
+
+    /**
+     * 设置右边view显示，点击的时候会自动变换视图
+     *
+     * @param defaultText 默认的视图
+     * @param changeText  点击修改的视图
+     * @param type        视图类型（图片或是文字）
+     * @param onClick     点击事件（new RightOnClick）
+     */
+    public void setRightView(Object defaultText, Object changeText, String type, final RightOnclick onClick) {
+        View v = null;
+
+        if (rightLay == null) {
+            setLinearLayoutPamas();
+            addRightView(rightLay);
+        }
+
+        if (type.equals(IMAGE)) {
+            imageView = new ImageView(mContext);
+            v = imageView;
+            setViewPamas(imageView);
+        } else if (type.equals(TEXT)) {
+            rightText = new TextView(mContext);
+            if (textColor > 0) {
+                rightText.setTextColor(getResources().getColor(textColor));
+            }else {
+                rightText.setTextColor(getResources().getColor(R.color.toolbar_white));
+            }
+            v = rightText;
+            setViewPamas(rightText);
+        }
+
+        if (defaultText instanceof String) {
+            defaultTextString = (String) defaultText;
+            rightText.setText(defaultTextString);
+        } else if (defaultText instanceof Integer) {
+            defaultTextInt = (int) defaultText;
+            if (rightText != null) {
+                rightText.setText(defaultTextInt);
+            } else if (imageView != null) {
+                imageView.setImageResource(defaultTextInt);
+            }
+        }
+
+        if (changeText instanceof String) {
+            changeTextString = (String) changeText;
+        } else if (changeText instanceof Integer) {
+            changeTextInt = (int) changeText;
+        }
+
+        v.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isChange) {
+                    if (!TextUtils.isEmpty(changeTextString)) {
+                        rightText.setText(changeTextString);
+                    } else if (changeTextInt > 0) {
+                        if (imageView != null) {
+                            imageView.setImageResource(changeTextInt);
+                        } else if (rightText != null) {
+                            rightText.setText(changeTextInt);
+                        }
+                    }
+                    onClick.defaultOnClick();
+                    isChange = true;
+                } else {
+                    if (!TextUtils.isEmpty(defaultTextString)) {
+                        rightText.setText(defaultTextString);
+                    } else if (defaultTextInt > 0) {
+                        if (imageView != null) {
+                            imageView.setImageResource(defaultTextInt);
+                        } else if (rightText != null) {
+                            rightText.setText(defaultTextInt);
+                        }
+                    }
+                    onClick.selectOnClick();
+                    isChange = false;
+                }
+            }
+        });
+
+        if (rightLay != null) {
+            rightLay.addView(v);
+        } else {
+            rightLay.addView(v);
+        }
+
+    }
+
+    /**
+     * 设置textview的一些参数
+     *
+     * @param view
+     */
+    private void setViewPamas(View view) {
+        ImageView imageView;
+        TextView textView;
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT
+        );
+        params.gravity = Gravity.CENTER_HORIZONTAL | Gravity.RIGHT;
+        params.setMargins(0, 0, 10, 0);
+        if (view instanceof TextView) {
+            textView = (TextView) view;
+            textView.setLayoutParams(params);
+            textView.setSingleLine();
+            textView.setEllipsize(TextUtils.TruncateAt.END);
+            textView.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+            textView.setTextSize(16);
+        } else if (view instanceof ImageView) {
+            imageView = (ImageView) view;
+            imageView.setLayoutParams(params);
+        }
+
+    }
+
+    /**
+     * 初始化LinearLayout
+     */
+    private void setLinearLayoutPamas() {
+        rightLay = new LinearLayout(mContext);
+        LinearLayout.LayoutParams paramLay = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT
+        );
+        paramLay.weight = 1;
+        paramLay.setMargins(0, 0, 10, 0);
+        rightLay.setLayoutParams(paramLay);
+        rightLay.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+        rightLay.setOrientation(LinearLayout.HORIZONTAL);
+    }
+
+
+    private void initRight(@Nullable Object text, @Nullable Integer icon, int id, View.OnClickListener btnClick) {
         ImageView imageView = null;
         TextView textView = null;
+
+        String rightViewTextString = null;//右边视图文本
+        int rightViewTextInt = 0;//右边视图文本
+
+        if (text != null) {
+            if (text instanceof String) {
+                rightViewTextString = (String) text;
+            } else {
+                if (text instanceof Integer) {
+                    rightViewTextInt = (int) text;
+                }
+            }
+        }
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT
@@ -230,14 +396,24 @@ public class HeadToolBar extends Toolbar {
             textView.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
             textView.setTextSize(16);
             textView.setLayoutParams(params);
-            textView.setText(text);
-            textView.setId(text);
+            if (textColor > 0) {
+                textView.setTextColor(getResources().getColor(textColor));
+            }else {
+                textView.setTextColor(getResources().getColor(R.color.toolbar_white));
+            }
+            if (!TextUtils.isEmpty(rightViewTextString)) {
+                textView.setText(rightViewTextString);
+            } else {
+                if (rightViewTextInt > 0)
+                    textView.setText(rightViewTextInt);
+            }
+            textView.setId(id);
             textView.setOnClickListener(btnClick);
-        } else if (icon != null && text == null){
+        } else if (icon != null && text == null) {
             imageView = new ImageView(mContext);
             imageView.setLayoutParams(params);
             imageView.setImageResource(icon);
-            imageView.setId(icon);
+            imageView.setId(id);
             imageView.setOnClickListener(btnClick);
         }
 
@@ -301,6 +477,7 @@ public class HeadToolBar extends Toolbar {
     /**
      * 设置中间标题
      * 参考 http://www.jianshu.com/p/621225a55561
+     *
      * @param title
      */
     public void setCenterTitle(CharSequence title) {
@@ -333,6 +510,7 @@ public class HeadToolBar extends Toolbar {
 
     /**
      * 设置中间标题 (目前还不能设置在中间)
+     *
      * @param subtitle
      */
     public void setCenterSubtitle(CharSequence subtitle) {
@@ -381,11 +559,11 @@ public class HeadToolBar extends Toolbar {
     /**
      * 设置控件图标
      *
-     * @param position
+     * @param position 位置从0开始
      * @param resource
      * @return
      */
-    public View setRightImage(int position, int resource) {
+    public View getRightTextView(int position, int resource) {
         TextView view = (TextView) rightLay.getChildAt(position);
         view.setBackgroundResource(resource);
         return view;
@@ -394,11 +572,48 @@ public class HeadToolBar extends Toolbar {
     /**
      * 对右边控件的简单操作
      *
-     * @param position
+     * @param position 位置从0开始
      * @return
      */
-    public View setRightImage(int position) {
+    public View getRightTextView(int position) {
         TextView view = (TextView) rightLay.getChildAt(position);
+        return view;
+    }
+
+    /**
+     * 改变右边图标文本字体颜色
+     * @param position
+     * @param color
+     * @return
+     */
+    public View setRightChangeTextColor(int position,int color){
+        TextView view = (TextView) rightLay.getChildAt(position);
+        view.setTextColor(getResources().getColor(color));
+        return view;
+    }
+
+
+    /**
+     * 设置控件图标
+     *
+     * @param position 位置从0开始
+     * @param resource
+     * @return
+     */
+    public View getRightImageView(int position, int resource) {
+        ImageView view = (ImageView) rightLay.getChildAt(position);
+        view.setImageResource(resource);
+        return view;
+    }
+
+    /**
+     * 对右边控件的简单操作
+     *
+     * @param position 位置从0开始
+     * @return
+     */
+    public View getRightImageView(int position) {
+        ImageView view = (ImageView) rightLay.getChildAt(position);
         return view;
     }
 
@@ -412,15 +627,17 @@ public class HeadToolBar extends Toolbar {
 
     /**
      * 替换右边menu三个点的图标
+     *
      * @param icon
      */
-    public void setOverflowIconChange(@Nullable Integer icon){
+    public void setOverflowIconChange(@Nullable Integer icon) {
         setOverflowIcon(mContext.getResources().getDrawable(icon));
     }
 
 
     /**
      * 设置中间标题显示位置（中间）
+     *
      * @param v
      */
     private void addCenterView(View v) {
@@ -438,6 +655,7 @@ public class HeadToolBar extends Toolbar {
 
     /**
      * 设置右边图标靠右，解决靠右时与设置中间标题的冲突
+     *
      * @param v
      */
     private void addRightView(View v) {
@@ -513,6 +731,7 @@ public class HeadToolBar extends Toolbar {
 
     /**
      * 重写设置标题的颜色
+     *
      * @param color
      */
     @Override
@@ -525,6 +744,7 @@ public class HeadToolBar extends Toolbar {
 
     /**
      * 重写设置副标题的颜色
+     *
      * @param color
      */
     @Override
@@ -538,9 +758,10 @@ public class HeadToolBar extends Toolbar {
 
     /**
      * menu 的一个pop显示
+     *
      * @param m
      */
-    public void popShow(Context m,int layout) {
+    public void popShow(Context m, int layout) {
         /**
          * 定位PopupWindow，让它恰好显示在Action Bar的下方。 通过设置Gravity，确定PopupWindow的大致位置。
          * 首先获得状态栏的高度，再获取Action bar的高度，这两者相加设置y方向的offset样PopupWindow就显示在action
@@ -549,37 +770,51 @@ public class HeadToolBar extends Toolbar {
          */
         // 获取状态栏高度
         Rect frame = new Rect();
-        ((Activity)m).getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+        ((Activity) m).getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
         //        状态栏高度：frame.top
         int xOffset = frame.top + HeadToolBar.TOOLBAR_HEIGHT;//减去阴影宽度，适配UI.
-        int yOffset = dip2px(3f); //设置x方向offset为5dp
+        int yOffset = dip2px(3f); //设置x方向offset为3dp
 //        View parentView = LayoutInflater.from(mContext).inflate(manyLay,null);
-        View popView =  LayoutInflater.from(mContext).inflate(
+        View popView = LayoutInflater.from(mContext).inflate(
                 layout, null);
-         popWind = new PopupWindow(popView,
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true);//popView即popupWindow的布局，ture设置focusAble.
-
+        if (popWind == null) {
+            popWind = new PopupWindow(popView,
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true);//popView即popupWindow的布局，ture设置focusAble.
+        }
         //必须设置BackgroundDrawable后setOutsideTouchable(true)才会有效。这里在XML中定义背景，所以这里设置为null;
         popWind.setBackgroundDrawable(new BitmapDrawable(getResources(),
                 (Bitmap) null));
-        popWind.setOutsideTouchable(true); //点击外部关闭。
+        popWind.setOutsideTouchable(false); //点击外部关闭。
+
         popWind.setAnimationStyle(android.R.style.Animation_Dialog);    //设置一个动画。
         //设置Gravity，让它显示在右上角。
         popWind.showAtLocation((View) getParent(), Gravity.RIGHT | Gravity.TOP,
                 yOffset, xOffset);
 
-        if (toolBarPopInterface != null){
+
+        if (toolBarPopInterface != null) {
             toolBarPopInterface.toolBarInitView(popView);
         }
     }
 
 
-    public void dimissPop(){
-        if (popWind != null && popWind.isShowing()){
+    /**
+     * 隐藏pop
+     */
+    public void dimissPop() {
+        if (popWind != null && popWind.isShowing()) {
             popWind.dismiss();
         }
     }
 
+    /**
+     * 获取pop对象
+     *
+     * @return
+     */
+    public PopupWindow getPopWind() {
+        return popWind;
+    }
 
     /**
      * 将dip或dp值转换为px值，保证尺寸大小不变
@@ -624,7 +859,7 @@ public class HeadToolBar extends Toolbar {
     }
 
 
-    public interface ToolBarPopInterface{
+    public interface ToolBarPopInterface {
         void toolBarInitView(View v);
     }
 
@@ -633,5 +868,7 @@ public class HeadToolBar extends Toolbar {
     public void setToolBarPopInterface(ToolBarPopInterface toolBarPopInterface) {
         this.toolBarPopInterface = toolBarPopInterface;
     }
+
+
 
 }

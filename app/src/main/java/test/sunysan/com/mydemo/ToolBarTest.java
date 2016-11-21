@@ -1,6 +1,7 @@
 package test.sunysan.com.mydemo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -140,7 +141,7 @@ public class ToolBarTest extends BaseMenuToolBarActivity implements HeadToolBar.
                     Toast.makeText(getBaseContext(), "提交", Toast.LENGTH_SHORT).show();
                     break;
 
-                case R.mipmap.ic_tr_point:
+                case 887:
                     bar.popShow(ToolBarTest.this, tests.sunysan.com.headtoolbar.R.layout.menu_popup_dialog);
 
 //                    Toast.makeText(getBaseContext(), "删除", Toast.LENGTH_SHORT).show();
@@ -152,6 +153,8 @@ public class ToolBarTest extends BaseMenuToolBarActivity implements HeadToolBar.
 
                 case R.id.video_popupwindow_search:
                     Toast.makeText(getBaseContext(), "搜索onClick", Toast.LENGTH_SHORT).show();
+                    Intent i = new Intent(ToolBarTest.this,TransparentToolbarTest.class);
+                    startActivity(i);
                     bar.dimissPop();
                     break;
                 case R.id.video_popupwindow_collection:

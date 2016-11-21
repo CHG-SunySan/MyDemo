@@ -33,9 +33,9 @@ import test.sunysan.com.headportraittools.R;
  * Created by SunySan on 2016/10/17.
  */
 public class HeadPortraitImp {
-    private final int START_ALBUM_REQUESTCODE = 1;
-    private final int CAMERA_WITH_DATA = 2;
-    private final int CROP_RESULT_CODE = 3;
+    public static final int START_ALBUM_REQUESTCODE = 8888;
+    public static final int CAMERA_WITH_DATA = START_ALBUM_REQUESTCODE + 1;
+    public static final int CROP_RESULT_CODE = CAMERA_WITH_DATA + 1;
     public static final String TMP_PATH = "/clip_head.jpg";
 
     private PopupWindow popupWindow;
@@ -71,7 +71,7 @@ public class HeadPortraitImp {
         popuCancel.setOnClickListener(onClick);
         isCircularText.setOnClickListener(onClick);
 
-        if (popupWindow == null){
+        if (popupWindow == null) {
             popupWindow = new PopupWindow(rootView,
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT);
@@ -127,11 +127,11 @@ public class HeadPortraitImp {
                 popupWindow.dismiss();
             } else if (id == R.id.popu_cancel) {// 取消
                 popupWindow.dismiss();
-            }else if (id == R.id.popu_circle ){
+            } else if (id == R.id.popu_circle) {
                 if (!ClipImageLayout.isCcircle) {
                     isCircularText.setTextColor(context.getResources().getColor(R.color.use_circle));
                     ClipImageLayout.isCcircle = true;
-                }else {
+                } else {
                     isCircularText.setTextColor(context.getResources().getColor(R.color.use_default));
                     ClipImageLayout.isCcircle = false;
                 }
