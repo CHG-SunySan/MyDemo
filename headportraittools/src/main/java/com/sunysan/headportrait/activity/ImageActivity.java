@@ -29,6 +29,7 @@ public class ImageActivity extends Activity implements OnClickListener {
     private final int CROP_RESULT_CODE = 3;
     private final String FILE_PATH = "/com.sunysan";
     public static final String TMP_PATH = "/clip_head.jpg";
+    public static final String CAMERA_PATH = "clip_head.jpg";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,18 +65,19 @@ public class ImageActivity extends Activity implements OnClickListener {
                 imageView.setImageBitmap(photo);
                 break;
             case START_ALBUM_REQUESTCODE:
-                startCropImageActivity(getFilePath(data.getData()));
+//                startCropImageActivity(getFilePath(data.getData()));
+                startCropImageActivity(data.getData());
                 break;
             case CAMERA_WITH_DATA:
                 // 照相机程序返回的,再次调用图片剪辑程序去修剪图片
-                startCropImageActivity(Environment.getExternalStorageDirectory()
-                        + TMP_PATH);
+                startCropImageActivity(Uri.fromFile(new File(Environment.getExternalStorageDirectory()
+                        + TMP_PATH)));
                 break;
         }
     }
 
     // 裁剪图片的Activity
-    private void startCropImageActivity(String path) {
+    private void startCropImageActivity(Uri path) {
         ClipImageActivity.startActivity(this, path, CROP_RESULT_CODE);
     }
 
@@ -105,30 +107,30 @@ public class ImageActivity extends Activity implements OnClickListener {
         startActivityForResult(intent, CAMERA_WITH_DATA);
     }
 
-    /**
-     * 通过uri获取文件路径
-     *
-     * @param mUri
-     * @return
-     */
-    public String getFilePath(Uri mUri) {
-        try {
-            if (mUri.getScheme().equals("file")) {
-                return mUri.getPath();
-            } else {
-                return getFilePathByUri(mUri);
-            }
-        } catch (FileNotFoundException ex) {
-            return null;
-        }
-    }
-
-    // 获取文件路径通过url
-    private String getFilePathByUri(Uri mUri) throws FileNotFoundException {
-        Cursor cursor = getContentResolver()
-                .query(mUri, null, null, null, null);
-        cursor.moveToFirst();
-        return cursor.getString(1);
-    }
+//    /**
+//     * 通过uri获取文件路径
+//     *
+//     * @param mUri
+//     * @return
+//     */
+//    public String getFilePath(Uri mUri) {
+//        try {
+//            if (mUri.getScheme().equals("file")) {
+//                return mUri.getPath();
+//            } else {
+//                return getFilePathByUri(mUri);
+//            }
+//        } catch (FileNotFoundException ex) {
+//            return null;
+//        }
+//    }
+//
+//    // 获取文件路径通过url
+//    private String getFilePathByUri(Uri mUri) throws FileNotFoundException {
+//        Cursor cursor = getContentResolver()
+//                .query(mUri, null, null, null, null);
+//        cursor.moveToFirst();
+//        return cursor.getString(1);
+//    }
 
 }

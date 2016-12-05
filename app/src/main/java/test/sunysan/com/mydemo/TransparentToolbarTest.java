@@ -1,12 +1,15 @@
 package test.sunysan.com.mydemo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import interfaces.RightOnclick;
+import utils.ToastUtils;
 import utils.ToolBarStatusUtils;
 import view.HeadToolBar;
 
@@ -14,6 +17,7 @@ import view.HeadToolBar;
  * Created by SunySan on 2016/11/4.
  */
 public class TransparentToolbarTest extends Activity {
+    private Context mContext;
     HeadToolBar bar;
     private LinearLayout statusLay;
 
@@ -22,6 +26,9 @@ public class TransparentToolbarTest extends Activity {
         ToolBarStatusUtils.setStatusBar(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.transparent_toolbar);
+        mContext = this;
+        //初始化时设置高度
+        ToolBarStatusUtils.statusHeight = ToolBarStatusUtils.getStatusBarH(this);
         initView();
     }
 
@@ -64,6 +71,16 @@ public class TransparentToolbarTest extends Activity {
 //        });
 //
 //        bar.setRightChangeTextColor(HeadToolBar.POSITION_FIRST,R.color.toolbar_theme);
-        ToolBarStatusUtils.setStatusGone(statusLay);
+//        ToolBarStatusUtils.setStatusGone(statusLay,true,R.color.toolbar_theme);
+        ToolBarStatusUtils.setColors(this,statusLay,R.color.toolbar_theme,true);
+
+        TextView view = (TextView) findViewById(R.id.test_toast);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Toast.makeText(mContext,"显示有没有问题",Toast.LENGTH_SHORT).show();
+                ToastUtils.show(mContext,"显示有没有问题");
+            }
+        });
     }
 }

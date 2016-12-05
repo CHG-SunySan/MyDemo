@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -11,11 +12,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import com.sunysan.headportrait.impl.HeadPortraitImp;
+import com.sunysan.headportrait.tools.UserOperationUtil;
 import com.sunysan.headportrait.view.ClipImageLayout;
 
 import test.sunysan.com.headportraittools.R;
@@ -30,9 +34,18 @@ public class ClipImageActivity extends Activity implements OnClickListener {
     private static final String KEY = "path";
     private ClipImageLayout mClipImageLayout = null;
 
-    public static void startActivity(Activity activity, String path, int code) {
+    private UserOperationUtil userOperationUtil;
+    private int width;
+    private int height;
+    private int sampleSize = 1;
+    private static final int DEFAULT_WIDTH = 512;
+    private static final int DEFAULT_HEIGHT = 384;
+    private Bitmap bitmap;
+
+    public static void startActivity(Activity activity, Uri path, int code) {
         Intent intent = new Intent(activity, ClipImageActivity.class);
-        intent.putExtra(KEY, path);
+//        intent.putExtra(KEY, path);
+        intent.putExtra("uri",path);
         activity.startActivityForResult(intent, code);
     }
 
@@ -42,12 +55,15 @@ public class ClipImageActivity extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.crop_image_layout);
 
+        userOperationUtil = new UserOperationUtil(this);
         mClipImageLayout = (ClipImageLayout) findViewById(R.id.clipImageLayout);
-        String path = getIntent().getStringExtra(KEY);
+//        String path = getIntent().getStringExtra(KEY);
+        Uri uri = getIntent().getParcelableExtra("uri");
 
         // 有的系统返回的图片是旋转了，有的没有旋转，所以处理
-        int degreee = readBitmapDegree(path);
-        Bitmap bitmap = createBitmap(path);
+        int degreee = readBitmapDegree(userOperationUtil.getFilePath(uri));
+//        bitmap = createBitmap(userOperationUtil.getFilePath(uri));
+        boolean isBitmapRotate = false;
         if (bitmap != null) {
             if (degreee == 0) {
                 mClipImageLayout.setImageBitmap(bitmap);
@@ -55,8 +71,24 @@ public class ClipImageActivity extends Activity implements OnClickListener {
                 mClipImageLayout.setImageBitmap(rotateBitmap(degreee, bitmap));
             }
         } else {
-            finish();
+//            String path = userOperationUtil.getFilePath(uri);
+            // 判断图片是不是旋转了90度，是的话就进行纠正。
+//            isBitmapRotate = userOperationUtil.isRotateImage(path);
+            getBitmapSize(uri);
+            getBitmap(uri);
+            if (bitmap == null){
+                finish();
+            }else {
+                if (degreee == 0) {
+                    mClipImageLayout.setImageBitmap(bitmap);
+                } else {
+                    mClipImageLayout.setImageBitmap(rotateBitmap(degreee, bitmap));
+                }
+            }
+
         }
+
+
         findViewById(R.id.okBtn).setOnClickListener(this);
         findViewById(R.id.cancleBtn).setOnClickListener(this);
     }
@@ -72,10 +104,13 @@ public class ClipImageActivity extends Activity implements OnClickListener {
                 bitmap = mClipImageLayout.clip();
 
             String path = Environment.getExternalStorageDirectory()
-                    + ImageActivity.TMP_PATH;
+                    + HeadPortraitImp.TMP_PATH;
             saveBitmap(bitmap, path);
 
-            Intent intent = new Intent();
+//            Intent intent = new Intent();
+//            intent.putExtra(RESULT_PATH, path);
+
+            Intent intent = new Intent("inline-data");
             intent.putExtra(RESULT_PATH, path);
             setResult(RESULT_OK, intent);
             ClipImageLayout.isCcircle = false;
@@ -181,4 +216,81 @@ public class ClipImageActivity extends Activity implements OnClickListener {
                 bitmap.getWidth(), bitmap.getHeight(), matrix, false);
         return resizedBitmap;
     }
+
+
+
+
+//    ????????????????????/????????????????????????????????????????????????????????????
+    /**
+     * 获取Bitmap分辨率，太大了就进行压缩
+     *
+     * @Title: getBitmapSize
+     * @return void
+     * @date 2012-12-14 上午8:32:13
+     */
+    private void getBitmapSize(Uri targetUri) {
+        InputStream is = null;
+        try {
+
+            is =userOperationUtil.getInputStream(targetUri);
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(is, null, options);
+
+            width = options.outWidth;
+            height = options.outHeight;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    /**
+     * 此处写方法描述
+     *
+     * @Title: getBitmap
+     * @return void
+     * @date 2012-12-13 下午8:22:23
+     */
+    private void getBitmap(Uri targetUri) {
+        InputStream is = null;
+        try {
+
+            try {
+                is = userOperationUtil.getInputStream(targetUri);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            while ((width / sampleSize > DEFAULT_WIDTH * 2)
+                    || (height / sampleSize > DEFAULT_HEIGHT * 2)) {
+                sampleSize *= 2;
+            }
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = sampleSize;
+
+            bitmap = BitmapFactory.decodeStream(is, null, options);
+
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+
+
 }

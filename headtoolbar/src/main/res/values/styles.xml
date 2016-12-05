@@ -2,7 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="AppBaseMyTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- 对应标题栏 toolbar（actionbar）颜色 -->
-        <item name="colorPrimary">#4876FF</item>
+        <item name="colorPrimary">#4EACFF</item>
         <!-- 状态栏颜色 -->
         <item name="colorPrimaryDark">#4EACFF</item>
         <!-- 窗口的背景颜色 -->

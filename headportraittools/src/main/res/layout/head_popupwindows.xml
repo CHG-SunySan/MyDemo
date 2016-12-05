@@ -18,7 +18,7 @@
             android:layout_marginRight="5dp"
             android:orientation="vertical" >
 
-            <Button
+            <TextView
                 android:id="@+id/popu_photograph"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
@@ -30,7 +30,7 @@
                 android:textColor="#0079ff"
                 android:textSize="21sp" />
 
-            <Button
+            <TextView
                 android:id="@+id/popu_album"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"

@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/headportraittools" />
             <option value="$PROJECT_DIR$/headtoolbar" />
+            <option value="$PROJECT_DIR$/recycleviewtool" />
           </set>
         </option>
         <option name="myModules">
@@ -19,6 +20,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/headportraittools" />
             <option value="$PROJECT_DIR$/headtoolbar" />
+            <option value="$PROJECT_DIR$/recycleviewtool" />
           </set>
         </option>
       </GradleProjectSettings>

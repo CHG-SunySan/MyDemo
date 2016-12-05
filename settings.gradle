@@ -1,1 +1,1 @@
-include ':app', ':headportraittools', ':headtoolbar'
+include ':app', ':headportraittools', ':headtoolbar', ':recycleviewtool'

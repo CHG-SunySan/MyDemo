@@ -166,20 +166,20 @@ public class HeadToolBar extends Toolbar {
 
     private void initView() {
         //默认导航图标
-        setNavigationIcon(R.drawable.head_back_sub_line);
+        setNavigationIcon(R.drawable.head_back);
         //默认标题
-//        setTitle(R.string.app_name);
+        setTitle(R.string.app_name);
         //默认标题颜色
         setTitleColor(R.color.toolbar_white);
         //默认背景颜色
         setBgColor(R.color.theme);
         //先不要调用该方法
-        reSetHeadToolBarHeight(52);
+//        reSetHeadToolBarHeight(52);
 
         setNavigationOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(mContext, "返回", Toast.LENGTH_LONG).show();
+//                Toast.makeText(mContext, "返回", Toast.LENGTH_LONG).show();
                 scanForActivity(mContext).finish();
             }
         });
